@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GET UP — Mi Progreso</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:     #D10000;
+  --red-d:   #A30000;
+  --red-l:   #FF1A1A;
+  --yellow:  #E8FF00;
+  --yellow-d:#B8CC00;
+  --bg:      #0A0A0A;
+  --bg1:     #111111;
+  --bg2:     #151515;
+  --bg3:     #1A1A1A;
+  --bg4:     #222222;
+  --border:  #2A2A2A;
+  --border-l:#333333;
+  --text:    #FFFFFF;
+  --text-2:  #AAAAAA;
+  --text-3:  #666666;
+  --text-4:  #444444;
+  --blue:    #4488FF;
+  --orange:  #FF6B00;
+  --green:   #00CC66;
+  --shadow:  0 4px 24px rgba(0,0,0,0.6);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+body{
+  font-family:'Barlow',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── LOADING ── */
+#loadingScreen{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;z-index:1000;
+}
+#loadingScreen.hidden{display:none}
+.loading-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:52px;font-weight:900;letter-spacing:4px;
+  color:var(--red);text-transform:uppercase;
+}
+.loading-logo span{color:#fff}
+.loading-bar-wrap{
+  width:160px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;
+}
+.loading-bar{
+  height:100%;background:var(--red);border-radius:1px;
+  animation:loadBar 1.5s ease-in-out infinite;
+}
+@keyframes loadBar{
+  0%{width:0;margin-left:0}
+  50%{width:100%;margin-left:0}
+  100%{width:0;margin-left:100%}
+}
+
+/* ── LOGIN ── */
+#loginScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:2rem 1.5rem;
+  background:var(--bg);
+  position:relative;overflow:hidden;
+}
+#loginScreen::before{
+  content:'';position:absolute;
+  top:-200px;left:-200px;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(209,0,0,0.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.login-card{
+  width:100%;max-width:380px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:16px;padding:2rem;
+  box-shadow:var(--shadow);
+  position:relative;z-index:1;
+  animation:slideUp .5s .1s both cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slideUp{
+  0%{transform:translateY(30px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+.login-brand{text-align:center;margin-bottom:1.75rem}
+.login-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:42px;font-weight:900;letter-spacing:4px;
+  color:var(--red);text-transform:uppercase;line-height:1;
+}
+.login-logo span{color:#fff}
+.login-sub{font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;margin-top:4px}
+
+.f-label{
+  display:block;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-3);margin-bottom:6px;
+}
+.f-input{
+  width:100%;padding:12px 16px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;font-family:'Barlow',sans-serif;
+  font-size:15px;color:var(--text);outline:none;
+  transition:border-color .2s;margin-bottom:14px;
+}
+.f-input:focus{border-color:var(--red)}
+.btn-login{
+  width:100%;padding:14px;border-radius:8px;
+  background:var(--red);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;border:none;cursor:pointer;
+  transition:all .15s;margin-top:4px;
+}
+.btn-login:hover{background:var(--red-l);transform:translateY(-1px)}
+.btn-login:active{transform:scale(.98)}
+.login-error{
+  background:rgba(209,0,0,0.12);border:1px solid rgba(209,0,0,0.4);
+  border-radius:8px;padding:10px 14px;
+  font-size:13px;font-weight:700;color:#FF6666;
+  margin-top:10px;display:none;text-align:center;
+}
+
+/* ── APP SHELL ── */
+#appShell{display:none;min-height:100vh;padding-bottom:72px}
+
+/* TOPBAR */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--bg1);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.topbar-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:24px;font-weight:900;letter-spacing:3px;
+  color:var(--red);text-transform:uppercase;flex:1;
+}
+.topbar-logo span{color:#fff}
+.topbar-sesiones{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:20px;padding:5px 14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:700;color:var(--yellow);
+}
+.topbar-avatar{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;color:#fff;cursor:pointer;
+}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--bg1);border-top:1px solid var(--border);
+  display:flex;
+}
+.bnav-btn{
+  flex:1;padding:10px 4px 8px;border:none;
+  background:transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:all .15s;
+}
+.bnav-btn .b-icon{font-size:22px;transition:transform .2s}
+.bnav-btn .b-lbl{
+  font-size:10px;font-weight:700;color:var(--text-4);
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.bnav-btn.active .b-lbl{color:var(--red)}
+.bnav-btn.active .b-icon{transform:scale(1.15)}
+
+/* SCREENS */
+.screen{display:none;padding:16px}
+.screen.visible{display:block}
+
+/* ── SECTION LABEL ── */
+.sec-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;
+}
+.sec-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:800;color:var(--text);
+  text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+
+/* ── HOME SCREEN ── */
+.profile-hero{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.profile-hero::after{
+  content:'GET UP';
+  position:absolute;right:-10px;bottom:-10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:80px;font-weight:900;color:rgba(209,0,0,0.06);
+  letter-spacing:4px;pointer-events:none;
+  white-space:nowrap;
+}
+.profile-top{
+  display:flex;align-items:center;gap:14px;margin-bottom:16px;
+}
+.profile-avatar-lg{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:800;color:#fff;flex-shrink:0;
+  border:2px solid var(--border-l);
+}
+.profile-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:24px;font-weight:800;color:var(--text);
+  text-transform:uppercase;letter-spacing:1px;line-height:1.1;
+}
+.profile-plan{
+  font-size:12px;font-weight:600;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.8px;margin-top:2px;
+}
+.profile-plan span{color:var(--yellow)}
+
+.stats-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.stat-chip{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;
+}
+.stat-chip-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:800;color:var(--yellow);line-height:1;
+}
+.stat-chip-lbl{
+  font-size:10px;font-weight:700;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.5px;margin-top:2px;
+}
+
+/* RING CARDS */
+.ring-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.ring-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.ring-svg{width:56px;height:56px}
+.ring-lbl{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+.ring-sub{font-size:10px;color:var(--text-4)}
+
+/* METAS */
+.metas-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.meta-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+  position:relative;overflow:hidden;
+  cursor:pointer;transition:border-color .2s;
+}
+.meta-card:hover{border-color:var(--border-l)}
+.meta-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:3px 0 0 3px;
+}
+.mc-red::before    {background:var(--red)}
+.mc-yellow::before {background:var(--yellow)}
+.mc-blue::before   {background:var(--blue)}
+.mc-orange::before {background:var(--orange)}
+.mc-green::before  {background:var(--green)}
+.meta-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.meta-emoji{font-size:18px}
+.meta-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:700;color:var(--text);
+  text-transform:uppercase;letter-spacing:.3px;flex:1;
+}
+.meta-pct{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;
+}
+.mc-red .meta-pct    {color:var(--red)}
+.mc-yellow .meta-pct {color:var(--yellow)}
+.mc-blue .meta-pct   {color:var(--blue)}
+.mc-orange .meta-pct {color:var(--orange)}
+.mc-green .meta-pct  {color:var(--green)}
+.meta-bar-wrap{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.meta-bar{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.mc-red .meta-bar    {background:var(--red)}
+.mc-yellow .meta-bar {background:var(--yellow)}
+.mc-blue .meta-bar   {background:var(--blue)}
+.mc-orange .meta-bar {background:var(--orange)}
+.mc-green .meta-bar  {background:var(--green)}
+.meta-nums{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text-3)}
+.meta-nums .curr{color:var(--text-2)}
+
+/* LOGROS */
+.logros-wrap{display:flex;flex-direction:column;gap:6px}
+.logro-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+}
+.logro-icon{
+  width:38px;height:38px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.logro-icon.earned{background:rgba(209,0,0,0.15);border:1px solid rgba(209,0,0,0.3)}
+.logro-icon.locked{background:var(--bg3);opacity:.35}
+.logro-info{flex:1}
+.logro-name{font-size:13px;font-weight:700;color:var(--text)}
+.logro-sub{font-size:11px;color:var(--text-3);margin-top:2px}
+.logro-xp{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;color:var(--yellow);
+}
+.logro-xp.locked{color:var(--text-4)}
+
+/* ── RUTINAS SCREEN ── */
+.day-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.day-tab{
+  flex-shrink:0;padding:7px 16px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg2);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;color:var(--text-3);
+  cursor:pointer;transition:all .15s;
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.day-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+
+.ejercicio-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-bottom:8px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all .2s;
+}
+.ejercicio-card:hover{border-color:var(--border-l)}
+.ejercicio-card.done{background:rgba(0,204,102,0.05);border-color:rgba(0,204,102,0.3)}
+.ej-check-box{
+  width:26px;height:26px;border-radius:6px;
+  border:2px solid var(--border-l);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .2s;background:var(--bg3);
+}
+.ejercicio-card.done .ej-check-box{
+  background:var(--green);border-color:var(--green);color:#000;
+}
+.ej-info{flex:1}
+.ej-name{font-size:15px;font-weight:700;color:var(--text)}
+.ej-sets{font-size:12px;color:var(--text-3);margin-top:2px}
+.ej-peso{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;font-weight:800;color:var(--yellow);
+}
+.ej-peso.pending{color:var(--text-4)}
+
+/* ── MÉTRICAS SCREEN ── */
+.metricas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.metrica-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+}
+.met-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:32px;font-weight:800;color:var(--text);line-height:1;
+}
+.met-val span{font-size:16px;color:var(--text-3);font-weight:600}
+.met-lbl{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.met-delta{font-size:11px;font-weight:700;margin-top:4px}
+.met-delta.up{color:var(--yellow)}
+.met-delta.down{color:var(--blue)}
+.met-delta.good{color:var(--green)}
+
+/* REGISTRO */
+.registro-form{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-bottom:14px;
+}
+.reg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.reg-field{}
+.reg-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px}
+.reg-input{
+  width:100%;padding:10px 12px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;font-family:'Barlow',sans-serif;
+  font-size:14px;color:var(--text);outline:none;transition:border-color .2s;
+}
+.reg-input:focus{border-color:var(--red)}
+.btn-guardar{
+  width:100%;padding:12px;border-radius:8px;
+  background:var(--red);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;border:none;cursor:pointer;
+  transition:all .15s;
+}
+.btn-guardar:hover{background:var(--red-l)}
+
+/* ── METAS SCREEN (full) ── */
+.meta-full-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.meta-full-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+}
+.mcf-red::before    {background:var(--red)}
+.mcf-yellow::before {background:var(--yellow)}
+.mcf-blue::before   {background:var(--blue)}
+.mcf-orange::before {background:var(--orange)}
+.mcf-green::before  {background:var(--green)}
+.mf-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.mf-emoji{font-size:24px}
+.mf-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:800;color:var(--text);
+  text-transform:uppercase;letter-spacing:.5px;flex:1;
+}
+.mf-date{font-size:11px;color:var(--text-3);font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.mf-bar-wrap{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.mf-bar{height:100%;border-radius:4px;transition:width .6s}
+.mcf-red .mf-bar    {background:var(--red)}
+.mcf-yellow .mf-bar {background:var(--yellow)}
+.mcf-blue .mf-bar   {background:var(--blue)}
+.mcf-orange .mf-bar {background:var(--orange)}
+.mcf-green .mf-bar  {background:var(--green)}
+.mf-nums{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text-3)}
+.mf-nums .curr{color:var(--text-2)}
+
+/* ADD META FORM */
+.add-meta-form{
+  background:var(--bg2);border:1px dashed var(--border-l);
+  border-radius:14px;padding:16px;margin-top:4px;
+}
+.add-meta-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;
+}
+
+/* ── PERFIL SCREEN ── */
+.perfil-hero{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:20px;margin-bottom:14px;
+  text-align:center;
+}
+.perfil-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--red);margin:0 auto 12px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:800;color:#fff;
+  border:2px solid var(--border-l);
+}
+.perfil-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:800;color:var(--text);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.perfil-email{font-size:13px;color:var(--text-3);margin-top:4px}
+.perfil-plan{
+  display:inline-block;margin-top:10px;
+  background:rgba(209,0,0,0.15);border:1px solid rgba(209,0,0,0.3);
+  border-radius:20px;padding:4px 16px;
+  font-size:12px;font-weight:700;color:var(--red);
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.btn-logout{
+  width:100%;padding:13px;border-radius:8px;
+  border:1px solid rgba(209,0,0,0.3);
+  background:rgba(209,0,0,0.08);color:var(--red);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;transition:all .15s;
+}
+.btn-logout:hover{background:rgba(209,0,0,0.18)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--bg2);border:1px solid var(--border-l);
+  color:var(--text);padding:10px 20px;border-radius:8px;
+  font-size:14px;font-weight:700;
+  opacity:0;transition:all .3s;z-index:500;
+  white-space:nowrap;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:380px){
+  .stats-strip{grid-template-columns:repeat(3,1fr)}
+  .ring-row{grid-template-columns:repeat(3,1fr)}
+  .metricas-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loading-logo">GET<span>UP</span></div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">GET<span>UP</span></div>
+      <div class="login-sub">Tu progreso, tu historia</div>
+    </div>
+    <label class="f-label">Correo</label>
+    <input class="f-input" type="email" id="loginEmail" placeholder="correo@email.com" autocomplete="email"/>
+    <label class="f-label">Contraseña</label>
+    <input class="f-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginError">Correo o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">GET<span>UP</span></div>
+    <div class="topbar-sesiones">💪 <span id="topSesiones">0</span> ses.</div>
+    <div class="topbar-avatar" id="topAvatar">?</div>
+  </div>
+
+  <!-- ── HOME ── -->
+  <div class="screen visible" id="screen-home">
+
+    <!-- Perfil hero -->
+    <div class="profile-hero">
+      <div class="profile-top">
+        <div class="profile-avatar-lg" id="homeAvatar">?</div>
+        <div>
+          <div class="profile-name" id="homeName">Atleta</div>
+          <div class="profile-plan" id="homePlan">Plan <span>—</span></div>
+        </div>
+      </div>
+      <div class="stats-strip">
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="statSes">0</div>
+          <div class="stat-chip-lbl">Sesiones</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="statAsis">—</div>
+          <div class="stat-chip-lbl">Asistencia</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="statXP">0</div>
+          <div class="stat-chip-lbl">XP total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anillos de progreso -->
+    <div class="sec-label">Progreso del mes</div>
+    <div class="ring-row">
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#1A1A1A" stroke-width="5"/>
+          <circle id="ringFuerza" cx="28" cy="28" r="22" fill="none" stroke="#D10000" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"
+            transform="rotate(-90 28 28)" style="transition:stroke-dashoffset .8s"/>
+          <text x="28" y="33" text-anchor="middle" fill="#E8FF00"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800" id="ringFuerzaPct">0%</text>
+        </svg>
+        <div class="ring-lbl">Fuerza</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#1A1A1A" stroke-width="5"/>
+          <circle id="ringNutri" cx="28" cy="28" r="22" fill="none" stroke="#4488FF" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"
+            transform="rotate(-90 28 28)" style="transition:stroke-dashoffset .8s"/>
+          <text x="28" y="33" text-anchor="middle" fill="#E8FF00"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800" id="ringNutriPct">0%</text>
+        </svg>
+        <div class="ring-lbl">Nutrición</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#1A1A1A" stroke-width="5"/>
+          <circle id="ringHabitos" cx="28" cy="28" r="22" fill="none" stroke="#FF6B00" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"
+            transform="rotate(-90 28 28)" style="transition:stroke-dashoffset .8s"/>
+          <text x="28" y="33" text-anchor="middle" fill="#E8FF00"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800" id="ringHabitosPct">0%</text>
+        </svg>
+        <div class="ring-lbl">Hábitos</div>
+      </div>
+    </div>
+
+    <!-- Metas personales (preview 3) -->
+    <div class="sec-label">Mis metas personales</div>
+    <div class="metas-wrap" id="metasPreview"></div>
+    <button onclick="showScreen('metas')" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;margin-bottom:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--border-l)'" onmouseout="this.style.borderColor='var(--border)'">Ver todas las metas →</button>
+
+    <!-- Logros recientes -->
+    <div class="sec-label">Logros recientes</div>
+    <div class="logros-wrap" id="logrosHome"></div>
+  </div>
+
+  <!-- ── RUTINAS ── -->
+  <div class="screen" id="screen-rutinas">
+    <div class="sec-title">💪 Rutinas</div>
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="sec-label" id="rutinaLabel">Selecciona un día</div>
+    <div id="ejerciciosList"></div>
+  </div>
+
+  <!-- ── MÉTRICAS ── -->
+  <div class="screen" id="screen-metricas">
+    <div class="sec-title">📊 Métricas</div>
+    <div class="sec-label">Estado actual</div>
+    <div class="metricas-grid" id="metricasGrid"></div>
+    <div class="sec-label">Registrar medición</div>
+    <div class="registro-form">
+      <div class="reg-row">
+        <div class="reg-field">
+          <label class="reg-label">Peso (kg)</label>
+          <input class="reg-input" type="number" id="regPeso" placeholder="ej: 79.5" step="0.1"/>
+        </div>
+        <div class="reg-field">
+          <label class="reg-label">Grasa corporal (%)</label>
+          <input class="reg-input" type="number" id="regGrasa" placeholder="ej: 17" step="0.1"/>
+        </div>
+      </div>
+      <div class="reg-row">
+        <div class="reg-field">
+          <label class="reg-label">Press banca (kg)</label>
+          <input class="reg-input" type="number" id="regBanca" placeholder="ej: 82" step="1"/>
+        </div>
+        <div class="reg-field">
+          <label class="reg-label">Sentadilla (kg)</label>
+          <input class="reg-input" type="number" id="regSquat" placeholder="ej: 110" step="1"/>
+        </div>
+      </div>
+      <button class="btn-guardar" onclick="guardarMetricas()">Guardar métricas</button>
+    </div>
+  </div>
+
+  <!-- ── METAS ── -->
+  <div class="screen" id="screen-metas">
+    <div class="sec-title">🎯 Mis metas</div>
+    <div id="metasFull"></div>
+    <div class="sec-label" style="margin-top:4px">Nueva meta personal</div>
+    <div class="add-meta-form">
+      <div class="reg-row">
+        <div class="reg-field">
+          <label class="reg-label">Nombre de la meta</label>
+          <input class="reg-input" type="text" id="metaNombre" placeholder="ej: Camino a los 100 kg"/>
+        </div>
+        <div class="reg-field">
+          <label class="reg-label">Emoji</label>
+          <input class="reg-input" type="text" id="metaEmoji" placeholder="🏋️" maxlength="2"/>
+        </div>
+      </div>
+      <div class="reg-row">
+        <div class="reg-field">
+          <label class="reg-label">Valor actual</label>
+          <input class="reg-input" type="text" id="metaActual" placeholder="ej: 82 kg"/>
+        </div>
+        <div class="reg-field">
+          <label class="reg-label">Valor meta</label>
+          <input class="reg-input" type="text" id="metaObjetivo" placeholder="ej: 100 kg"/>
+        </div>
+      </div>
+      <div class="reg-row">
+        <div class="reg-field">
+          <label class="reg-label">Fecha límite</label>
+          <input class="reg-input" type="text" id="metaFecha" placeholder="ej: Diciembre 2025"/>
+        </div>
+        <div class="reg-field">
+          <label class="reg-label">Progreso % actual</label>
+          <input class="reg-input" type="number" id="metaPct" placeholder="ej: 82" min="0" max="100"/>
+        </div>
+      </div>
+      <button class="btn-guardar" onclick="agregarMeta()">Agregar meta</button>
+    </div>
+  </div>
+
+  <!-- ── PERFIL ── -->
+  <div class="screen" id="screen-perfil">
+    <div class="sec-title">👤 Mi perfil</div>
+    <div class="perfil-hero">
+      <div class="perfil-avatar" id="perfilAvatar">?</div>
+      <div class="perfil-name" id="perfilName">—</div>
+      <div class="perfil-email" id="perfilEmail">—</div>
+      <div class="perfil-plan" id="perfilPlan">—</div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="bnav-btn active" id="bnav-home" onclick="showScreen('home')">
+      <span class="b-icon">🏠</span><span class="b-lbl">Inicio</span>
+    </button>
+    <button class="bnav-btn" id="bnav-rutinas" onclick="showScreen('rutinas')">
+      <span class="b-icon">💪</span><span class="b-lbl">Rutinas</span>
+    </button>
+    <button class="bnav-btn" id="bnav-metricas" onclick="showScreen('metricas')">
+      <span class="b-icon">📊</span><span class="b-lbl">Métricas</span>
+    </button>
+    <button class="bnav-btn" id="bnav-metas" onclick="showScreen('metas')">
+      <span class="b-icon">🎯</span><span class="b-lbl">Metas</span>
+    </button>
+    <button class="bnav-btn" id="bnav-perfil" onclick="showScreen('perfil')">
+      <span class="b-icon">👤</span><span class="b-lbl">Perfil</span>
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ── FIREBASE CONFIG — REEMPLAZA CON TU CONFIGURACIÓN ────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyBF99NZrvYMrlY8iNtQVcfME-uqR-XS3p0",
+  authDomain:        "getup-app-55b67.firebaseapp.com",
+  projectId:         "getup-app-55b67",
+  storageBucket:     "getup-app-55b67.firebasestorage.app",
+  messagingSenderId: "544743529463",
+  appId:             "1:544743529463:web:5dedb419fedb9f38bfecf2"
+};
+// ─────────────────────────────────────────────────────────────
+
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+// ── COLORES META ─────────────────────────────────────────────
+const META_COLORS = ['mc-red','mc-yellow','mc-blue','mc-orange','mc-green'];
+const META_COLORS_FULL = ['mcf-red','mcf-yellow','mcf-blue','mcf-orange','mcf-green'];
+
+// ── RUTINAS POR DÍA ──────────────────────────────────────────
+const RUTINAS = {
+  'Lunes':    { nombre:'Tren superior A', ejercicios:[
+    {nombre:'Press de banca',  series:'4 × 8',  peso:null},
+    {nombre:'Remo con barra',  series:'4 × 10', peso:null},
+    {nombre:'Press militar',   series:'3 × 10', peso:null},
+    {nombre:'Dominadas',       series:'3 × 8',  peso:'Peso corporal'},
+    {nombre:'Curl de bíceps',  series:'3 × 12', peso:null},
+  ]},
+  'Martes':   { nombre:'Tren inferior A', ejercicios:[
+    {nombre:'Sentadilla',      series:'4 × 8',  peso:null},
+    {nombre:'Peso muerto rumano', series:'3 × 10', peso:null},
+    {nombre:'Prensa de piernas', series:'3 × 12', peso:null},
+    {nombre:'Extensión cuádriceps', series:'3 × 15', peso:null},
+  ]},
+  'Miércoles':{ nombre:'Cardio + Core', ejercicios:[
+    {nombre:'Caminata inclinada', series:'20 min', peso:'—'},
+    {nombre:'Plancha', series:'3 × 45 seg', peso:'—'},
+    {nombre:'Abdominales', series:'3 × 20', peso:'—'},
+  ]},
+  'Jueves':   { nombre:'Tren superior B', ejercicios:[
+    {nombre:'Press inclinado',   series:'4 × 8',  peso:null},
+    {nombre:'Jalón al pecho',    series:'4 × 10', peso:null},
+    {nombre:'Aperturas mancuernas', series:'3 × 12', peso:null},
+    {nombre:'Tríceps polea',     series:'3 × 15', peso:null},
+  ]},
+  'Viernes':  { nombre:'Tren inferior B + cardio', ejercicios:[
+    {nombre:'Hip thrust',        series:'4 × 10', peso:null},
+    {nombre:'Zancadas',          series:'3 × 12', peso:null},
+    {nombre:'Pantorrillas',      series:'4 × 15', peso:null},
+    {nombre:'Bicicleta estática', series:'15 min', peso:'—'},
+  ]},
+};
+
+// ── LOGROS ───────────────────────────────────────────────────
+const LOGROS = [
+  {id:'ses5',  nombre:'Primeros 5 entrenamientos', sub:'Bienvenido a Get Up', emoji:'🔥', xp:50,  req:d=>d.sesiones>=5},
+  {id:'ses20', nombre:'20 sesiones completadas',   sub:'Ya eres constante',  emoji:'💪', xp:150, req:d=>d.sesiones>=20},
+  {id:'banca80',nombre:'Press banca 80 kg',        sub:'Marca personal',     emoji:'🏋️', xp:100, req:d=>d.metricas?.banca>=80},
+  {id:'banca100',nombre:'Los 100 kg en banca',     sub:'Élite de fuerza',    emoji:'🏆', xp:250, req:d=>d.metricas?.banca>=100},
+  {id:'peso1', nombre:'Primera medición registrada', sub:'Seguimiento activo', emoji:'📏', xp:30, req:d=>!!d.metricas?.peso},
+  {id:'meta1', nombre:'Primera meta creada',        sub:'Tienes un objetivo', emoji:'🎯', xp:50, req:d=>d.metas?.length>=1},
+];
+
+// ── STATE ────────────────────────────────────────────────────
+let currentUser = null;
+let userData = null;
+let selectedDay = 'Lunes';
+let ejerciciosDone = {};
+
+function defaultProfile(email) {
+  return {
+    email,
+    displayName: email.split('@')[0],
+    plan: 'Plan inicial',
+    sesiones: 0,
+    xp: 0,
+    metricas: { peso:null, grasa:null, banca:null, squat:null },
+    metas: [
+      { nombre:'Camino a los 100 kg en press de banca', emoji:'🏋️', actual:'82 kg', objetivo:'100 kg', fecha:'Diciembre 2025', pct:82 },
+      { nombre:'Peso ideal para el matrimonio',          emoji:'💍', actual:'79 kg', objetivo:'73 kg',  fecha:'Junio 2025',     pct:58 },
+      { nombre:'En forma para el viaje a Europa',        emoji:'✈️', actual:'35%',   objetivo:'100%',   fecha:'Agosto 2025',    pct:35 },
+    ],
+    logros: [],
+    ejerciciosDone: {},
+    createdAt: Date.now(),
+  };
+}
+
+// ── FIREBASE ─────────────────────────────────────────────────
+async function loadUserData(uid) {
+  const ref = doc(db, 'usuarios', uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) return snap.data();
+  const profile = defaultProfile(auth.currentUser.email);
+  await setDoc(ref, profile);
+  return profile;
+}
+
+async function saveUserData() {
+  if (!currentUser || !userData) return;
+  await setDoc(doc(db,'usuarios',currentUser.uid), userData, {merge:true});
+}
+
+// ── RENDER ───────────────────────────────────────────────────
+function renderAll() {
+  const u = userData;
+  const initials = (u.displayName||'?').substring(0,2).toUpperCase();
+
+  document.getElementById('topAvatar').textContent = initials;
+  document.getElementById('topSesiones').textContent = u.sesiones||0;
+  document.getElementById('homeAvatar').textContent = initials;
+  document.getElementById('homeName').textContent = u.displayName||'Atleta';
+  document.getElementById('homePlan').innerHTML = `Plan <span>${u.plan||'—'}</span>`;
+  document.getElementById('statSes').textContent = u.sesiones||0;
+  document.getElementById('statAsis').textContent = u.asistencia ? Math.round(u.asistencia)+'%' : '—';
+  document.getElementById('statXP').textContent = u.xp||0;
+  document.getElementById('perfilAvatar').textContent = initials;
+  document.getElementById('perfilName').textContent = u.displayName||'—';
+  document.getElementById('perfilEmail').textContent = u.email||'—';
+  document.getElementById('perfilPlan').textContent = u.plan||'—';
+
+  setRing('ringFuerza','ringFuerzaPct', u.progreso?.fuerza||0, '#D10000');
+  setRing('ringNutri', 'ringNutriPct',  u.progreso?.nutri||0,  '#4488FF');
+  setRing('ringHabitos','ringHabitosPct', u.progreso?.habitos||0,'#FF6B00');
+
+  renderMetasPreview();
+  renderMetasFull();
+  renderMetricas();
+  renderLogros();
+  renderRutina();
+}
+
+function setRing(circleId, textId, pct, color) {
+  const circ = 138;
+  const offset = circ - (circ * pct / 100);
+  const el = document.getElementById(circleId);
+  const txt = document.getElementById(textId);
+  if (el) { el.style.strokeDashoffset = offset; el.setAttribute('stroke', color); }
+  if (txt) txt.textContent = Math.round(pct)+'%';
+}
+
+function renderMetasPreview() {
+  const metas = userData.metas || [];
+  document.getElementById('metasPreview').innerHTML = metas.slice(0,3).map((m,i) => {
+    const col = META_COLORS[i % META_COLORS.length];
+    return `<div class="meta-card ${col}">
+      <div class="meta-top">
+        <span class="meta-emoji">${m.emoji||'🎯'}</span>
+        <span class="meta-name">${m.nombre}</span>
+        <span class="meta-pct">${m.pct}%</span>
+      </div>
+      <div class="meta-bar-wrap"><div class="meta-bar" style="width:${m.pct}%"></div></div>
+      <div class="meta-nums">
+        <span class="curr">${m.actual}</span>
+        <span>${m.objetivo}${m.fecha?' · '+m.fecha:''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMetasFull() {
+  const metas = userData.metas || [];
+  if (!metas.length) {
+    document.getElementById('metasFull').innerHTML = '<p style="color:var(--text-3);font-size:14px;margin-bottom:14px">Aún no tienes metas. Agrega la primera abajo.</p>';
+    return;
+  }
+  document.getElementById('metasFull').innerHTML = metas.map((m,i) => {
+    const col = META_COLORS_FULL[i % META_COLORS_FULL.length];
+    return `<div class="meta-full-card ${col}">
+      <div class="mf-header">
+        <span class="mf-emoji">${m.emoji||'🎯'}</span>
+        <div style="flex:1">
+          <div class="mf-title">${m.nombre}</div>
+          ${m.fecha?`<div class="mf-date">Fecha: ${m.fecha}</div>`:''}
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--yellow)">${m.pct}%</div>
+      </div>
+      <div class="mf-bar-wrap"><div class="mf-bar" style="width:${m.pct}%"></div></div>
+      <div class="mf-nums">
+        <span class="curr">${m.actual}</span>
+        <span>${m.objetivo}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMetricas() {
+  const met = userData.metricas || {};
+  const cards = [
+    { val: met.peso   ? met.peso+'<span> kg</span>'  : '—',    lbl:'Peso corporal',    delta: met.pesoDelta ? (met.pesoDelta>0?'▲ +':'▼ ')+Math.abs(met.pesoDelta)+' kg este mes':'—', dir: met.pesoDelta<=0?'good':'up' },
+    { val: met.grasa  ? met.grasa+'<span> %</span>'  : '—',    lbl:'Grasa corporal',   delta: met.grasaDelta ? (met.grasaDelta>0?'▲ +':'▼ ')+Math.abs(met.grasaDelta)+'% este mes':'—', dir: met.grasaDelta<=0?'good':'up' },
+    { val: met.banca  ? met.banca+'<span> kg</span>' : '—',    lbl:'Press de banca',   delta: met.bancaDelta ? '▲ +'+met.bancaDelta+' kg historial':'Registra tu marca', dir:'up' },
+    { val: met.squat  ? met.squat+'<span> kg</span>' : '—',    lbl:'Sentadilla',       delta: met.squatDelta ? '▲ +'+met.squatDelta+' kg historial':'Registra tu marca', dir:'up' },
+  ];
+  document.getElementById('metricasGrid').innerHTML = cards.map(c=>`
+    <div class="metrica-card">
+      <div class="met-val">${c.val}</div>
+      <div class="met-lbl">${c.lbl}</div>
+      <div class="met-delta ${c.dir}">${c.delta}</div>
+    </div>`).join('');
+}
+
+function renderLogros() {
+  const ganados = userData.logros || [];
+  const visible = LOGROS.slice(0,4);
+  document.getElementById('logrosHome').innerHTML = visible.map(l => {
+    const earned = ganados.includes(l.id) || l.req(userData);
+    return `<div class="logro-card">
+      <div class="logro-icon ${earned?'earned':'locked'}">${l.emoji}</div>
+      <div class="logro-info">
+        <div class="logro-name" style="color:${earned?'var(--text)':'var(--text-4)'}">${l.nombre}</div>
+        <div class="logro-sub">${l.sub}</div>
+      </div>
+      <span class="logro-xp ${earned?'':'locked'}">+${l.xp} XP</span>
+    </div>`;
+  }).join('');
+  checkLogros();
+}
+
+function checkLogros() {
+  const ganados = userData.logros || [];
+  let changed = false;
+  LOGROS.forEach(l => {
+    if (!ganados.includes(l.id) && l.req(userData)) {
+      ganados.push(l.id);
+      userData.xp = (userData.xp||0) + l.xp;
+      changed = true;
+      showToast(`🏆 Logro desbloqueado: ${l.nombre} (+${l.xp} XP)`);
+    }
+  });
+  if (changed) { userData.logros = ganados; saveUserData(); }
+}
+
+function renderRutina() {
+  const dias = Object.keys(RUTINAS);
+  document.getElementById('dayTabs').innerHTML = dias.map(d =>
+    `<div class="day-tab ${d===selectedDay?'active':''}" onclick="selectDay('${d}')">${d.substring(0,3)}</div>`
+  ).join('');
+
+  const rutina = RUTINAS[selectedDay];
+  if (!rutina) return;
+  document.getElementById('rutinaLabel').textContent = rutina.nombre;
+  const done = userData.ejerciciosDone?.[selectedDay] || {};
+  document.getElementById('ejerciciosList').innerHTML = rutina.ejercicios.map((ej,i) => {
+    const isDone = !!done[i];
+    const pesoDisplay = ej.peso === null
+      ? (userData.metricas?.[ej.nombre.toLowerCase().replace(/ /g,'')] || '—') + ' kg'
+      : ej.peso;
+    return `<div class="ejercicio-card ${isDone?'done':''}" onclick="toggleEjercicio('${selectedDay}',${i})">
+      <div class="ej-check-box">${isDone?'✓':''}</div>
+      <div class="ej-info">
+        <div class="ej-name">${ej.nombre}</div>
+        <div class="ej-sets">${ej.series}</div>
+      </div>
+      <span class="ej-peso ${isDone?'':'pending'}">${pesoDisplay}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── INTERACTIONS ─────────────────────────────────────────────
+window.selectDay = function(day) {
+  selectedDay = day;
+  renderRutina();
+};
+
+window.toggleEjercicio = async function(day, idx) {
+  if (!userData.ejerciciosDone) userData.ejerciciosDone = {};
+  if (!userData.ejerciciosDone[day]) userData.ejerciciosDone[day] = {};
+  const prev = !!userData.ejerciciosDone[day][idx];
+  userData.ejerciciosDone[day][idx] = !prev;
+  if (!prev) {
+    userData.xp = (userData.xp||0) + 10;
+    showToast('+10 XP 💪');
+    const doneCount = Object.values(userData.ejerciciosDone[day]).filter(Boolean).length;
+    if (doneCount === RUTINAS[day].ejercicios.length) {
+      userData.sesiones = (userData.sesiones||0) + 1;
+      userData.xp = (userData.xp||0) + 50;
+      showToast('🔥 ¡Entrenamiento completo! +50 XP');
+    }
+  }
+  renderAll();
+  await saveUserData();
+};
+
+window.guardarMetricas = async function() {
+  const peso  = parseFloat(document.getElementById('regPeso').value);
+  const grasa = parseFloat(document.getElementById('regGrasa').value);
+  const banca = parseFloat(document.getElementById('regBanca').value);
+  const squat = parseFloat(document.getElementById('regSquat').value);
+  if (!userData.metricas) userData.metricas = {};
+  if (!isNaN(peso))  { userData.metricas.pesoDelta  = +(peso  - (userData.metricas.peso ||peso)).toFixed(1);  userData.metricas.peso  = peso; }
+  if (!isNaN(grasa)) { userData.metricas.grasaDelta = +(grasa - (userData.metricas.grasa||grasa)).toFixed(1); userData.metricas.grasa = grasa; }
+  if (!isNaN(banca)) { userData.metricas.bancaDelta = +(banca - (userData.metricas.banca||banca)).toFixed(1); userData.metricas.banca = banca; }
+  if (!isNaN(squat)) { userData.metricas.squatDelta = +(squat - (userData.metricas.squat||squat)).toFixed(1); userData.metricas.squat = squat; }
+  document.getElementById('regPeso').value='';
+  document.getElementById('regGrasa').value='';
+  document.getElementById('regBanca').value='';
+  document.getElementById('regSquat').value='';
+  showToast('✅ Métricas guardadas');
+  renderAll();
+  await saveUserData();
+};
+
+window.agregarMeta = async function() {
+  const nombre = document.getElementById('metaNombre').value.trim();
+  const emoji  = document.getElementById('metaEmoji').value.trim() || '🎯';
+  const actual = document.getElementById('metaActual').value.trim();
+  const obj    = document.getElementById('metaObjetivo').value.trim();
+  const fecha  = document.getElementById('metaFecha').value.trim();
+  const pct    = parseInt(document.getElementById('metaPct').value) || 0;
+  if (!nombre) { showToast('Escribe el nombre de la meta'); return; }
+  if (!userData.metas) userData.metas = [];
+  userData.metas.push({ nombre, emoji, actual, objetivo:obj, fecha, pct });
+  document.getElementById('metaNombre').value='';
+  document.getElementById('metaEmoji').value='';
+  document.getElementById('metaActual').value='';
+  document.getElementById('metaObjetivo').value='';
+  document.getElementById('metaFecha').value='';
+  document.getElementById('metaPct').value='';
+  showToast('🎯 Meta agregada');
+  renderAll();
+  await saveUserData();
+};
+
+// ── UI ───────────────────────────────────────────────────────
+window.showScreen = function(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('visible'));
+  document.getElementById('screen-'+id).classList.add('visible');
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('bnav-'+id);
+  if (btn) btn.classList.add('active');
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── AUTH ─────────────────────────────────────────────────────
+window.doLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginError');
+  err.style.display = 'none';
+  if (!email || !pass) { err.style.display='block'; return; }
+  try { await signInWithEmailAndPassword(auth, email, pass); }
+  catch(e) { err.style.display = 'block'; }
+};
+
+window.doLogout = async function() { await signOut(auth); };
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && document.getElementById('loginScreen').style.display !== 'none')
+    window.doLogin();
+});
+
+onAuthStateChanged(auth, async user => {
+  document.getElementById('loadingScreen').classList.add('hidden');
+  if (user) {
+    currentUser = user;
+    userData = await loadUserData(user.uid);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    renderAll();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appShell').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
